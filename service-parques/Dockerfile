@@ -2,7 +2,7 @@
 FROM maven:3.9.9-eclipse-temurin-21 AS build
 WORKDIR /app
 COPY . /app
-RUN mvn -q -DskipTests -pl service-parques -am package
+RUN mvn -q -DskipTests -pl service-parques -am clean package spring-boot:repackage
 
 # Runtime stage
 FROM eclipse-temurin:21-jre
