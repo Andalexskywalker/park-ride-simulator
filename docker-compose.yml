@@ -1,0 +1,87 @@
+version: "3.9"
+services:
+  eureka-server:
+    build:
+      context: .
+      dockerfile: eureka-server/Dockerfile
+    ports:
+      - "8761:8761"
+    environment:
+      - JAVA_TOOL_OPTIONS=-XX:+UseZGC -Xms128m -Xmx256m
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - EUREKA_URI=http://eureka-server:8761/eureka/
+      - JAVA_TOOL_OPTIONS=-XX:+UseZGC -Xms128m -Xmx256m
+    depends_on:
+      - eureka-server
+
+  service-parques:
+    build:
+      context: .
+      dockerfile: service-parques/Dockerfile
+    environment:
+      - EUREKA_URI=http://eureka-server:8761/eureka/
+      - SERVER_PORT=8081
+      - SERVICE_NAME=service-parques
+      - CONTEXT_PATH=/parques
+      - JAVA_TOOL_OPTIONS=-XX:+UseZGC -Xms96m -Xmx192m
+    depends_on:
+      - eureka-server
+
+  service-utilizadores:
+    build:
+      context: .
+      dockerfile: service-utilizadores/Dockerfile
+    environment:
+      - EUREKA_URI=http://eureka-server:8761/eureka/
+      - SERVER_PORT=8082
+      - SERVICE_NAME=service-utilizadores
+      - CONTEXT_PATH=/utilizadores
+      - JAVA_TOOL_OPTIONS=-XX:+UseZGC -Xms96m -Xmx192m
+    depends_on:
+      - eureka-server
+
+  service-sessoes:
+    build:
+      context: .
+      dockerfile: service-sessoes/Dockerfile
+    environment:
+      - EUREKA_URI=http://eureka-server:8761/eureka/
+      - SERVER_PORT=8083
+      - SERVICE_NAME=service-sessoes
+      - CONTEXT_PATH=/sessoes
+      - JAVA_TOOL_OPTIONS=-XX:+UseZGC -Xms96m -Xmx192m
+    depends_on:
+      - eureka-server
+
+  service-tarifas-faturacao:
+    build:
+      context: .
+      dockerfile: service-tarifas-faturacao/Dockerfile
+    environment:
+      - EUREKA_URI=http://eureka-server:8761/eureka/
+      - SERVER_PORT=8084
+      - SERVICE_NAME=service-tarifas-faturacao
+      - CONTEXT_PATH=/tarifas
+      - JAVA_TOOL_OPTIONS=-XX:+UseZGC -Xms96m -Xmx192m
+    depends_on:
+      - eureka-server
+
+  service-reco-analytics:
+    build:
+      context: .
+      dockerfile: service-reco-analytics/Dockerfile
+    environment:
+      - EUREKA_URI=http://eureka-server:8761/eureka/
+      - SERVER_PORT=8085
+      - SERVICE_NAME=service-reco-analytics
+      - CONTEXT_PATH=/reco
+      - JAVA_TOOL_OPTIONS=-XX:+UseZGC -Xms96m -Xmx192m
+    depends_on:
+      - eureka-server
