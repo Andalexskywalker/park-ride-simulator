@@ -1,0 +1,42 @@
+// service-sessoes/src/main/java/.../service/SessoesService.java
+package pt.portfolio.prr.sessoes.service;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.server.ResponseStatusException;
+
+@Service
+public class SessoesService {
+
+  private final WebClient parquesClient;
+
+  public SessoesService(WebClient.Builder builder) {
+    // usa o nome de registo no Eureka
+    this.parquesClient = builder.baseUrl("http://service-parques").build();
+  }
+
+  public void checkinParque(long parqueId) {
+    var resp = parquesClient.post()
+        .uri("/parques/api/parques/{id}/checkin", parqueId)
+        .retrieve()
+        .onStatus(HttpStatus::is4xxClientError, r -> r.bodyToMono(String.class)
+            .map(msg -> new ResponseStatusException(r.statusCode(), msg)))
+        .onStatus(HttpStatus::is5xxServerError, r -> r.bodyToMono(String.class)
+            .map(msg -> new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Parques indisponível: " + msg)))
+        .toBodilessEntity()
+        .block();
+  }
+
+  public void checkoutParque(long parqueId) {
+    parquesClient.post()
+        .uri("/parques/api/parques/{id}/checkout", parqueId)
+        .retrieve()
+        .onStatus(HttpStatus::is4xxClientError, r -> r.bodyToMono(String.class)
+            .map(msg -> new ResponseStatusException(r.statusCode(), msg)))
+        .onStatus(HttpStatus::is5xxServerError, r -> r.bodyToMono(String.class)
+            .map(msg -> new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Parques indisponível: " + msg)))
+        .toBodilessEntity()
+        .block();
+  }
+}

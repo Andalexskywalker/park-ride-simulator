@@ -1,14 +1,21 @@
 server:
-  port: ${SERVER_PORT:8080}
+  port: ${SERVER_PORT:8083}
   servlet:
-    context-path: ${CONTEXT_PATH:}
+    context-path: ${CONTEXT_PATH:/sessoes}
 
 spring:
   application:
-    name: ${SERVICE_NAME:unknown}
-  main:
-    banner-mode: "off"
-
+    name: ${SERVICE_NAME:service-sessoes}
+  datasource:
+    url: jdbc:h2:mem:sessoes;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+  sql:
+    init:
+      mode: never
+      
 management:
   endpoints:
     web:
@@ -22,6 +29,13 @@ management:
 eureka:
   client:
     service-url:
-      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka/}
+      defaultZone: ${EUREKA_URI:http://eureka-server:8761/eureka/}
     fetch-registry: true
     register-with-eureka: true
+    healthcheck:
+      enabled: true
+    registry-fetch-interval-seconds: 5
+  instance:
+    lease-renewal-interval-in-seconds: 10
+    lease-expiration-duration-in-seconds: 30
+    prefer-ip-address: true

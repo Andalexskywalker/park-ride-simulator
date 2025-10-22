@@ -6,11 +6,15 @@ spring:
     name: eureka-server
 
 eureka:
+  instance:
+    lease-renewal-interval-in-seconds: 10     # heartbeat a cada 10s
+    lease-expiration-duration-in-seconds: 30  # expira em 30s sem heartbeats
+    prefer-ip-address: true
   client:
-    register-with-eureka: false
-    fetch-registry: false
-  server:
-    waitTimeInMsWhenSyncEmpty: 0
+    healthcheck:
+      enabled: true                           # usa Actuator/health para o status
+    registry-fetch-interval-seconds: 5        # refetch rápido (opcional)
+
 
 management:
   endpoints:

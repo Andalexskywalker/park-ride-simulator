@@ -20,8 +20,11 @@ management:
         enabled: true
 
 eureka:
+  instance:
+    lease-renewal-interval-in-seconds: 10     # heartbeat a cada 10s
+    lease-expiration-duration-in-seconds: 30  # expira em 30s sem heartbeats
+    prefer-ip-address: true
   client:
-    service-url:
-      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka/}
-    fetch-registry: true
-    register-with-eureka: true
+    healthcheck:
+      enabled: true                           # usa Actuator/health para o status
+    registry-fetch-interval-seconds: 5        # refetch rápido (opcional)

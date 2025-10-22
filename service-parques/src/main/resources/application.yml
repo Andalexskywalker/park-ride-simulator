@@ -1,7 +1,11 @@
 server:
-  port: ${SERVER_PORT:8081}
+  port: ${SERVER_PORT:8080}
   servlet:
     context-path: ${CONTEXT_PATH:/parques}
+    error:
+      include-message: always
+
+
 
 spring:
   application:
@@ -43,6 +47,15 @@ management:
 eureka:
   client:
     service-url:
-      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka/}
+      defaultZone: ${EUREKA_URI:http://eureka-server:8761/eureka/}
     fetch-registry: true
     register-with-eureka: true
+    healthcheck:
+      enabled: true
+    registry-fetch-interval-seconds: 5
+  instance:
+    lease-renewal-interval-in-seconds: 10
+    lease-expiration-duration-in-seconds: 30
+    prefer-ip-address: true
+
+

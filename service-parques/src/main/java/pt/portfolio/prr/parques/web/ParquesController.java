@@ -3,31 +3,45 @@ package pt.portfolio.prr.parques.web;
 import pt.portfolio.prr.parques.domain.EstadoParque;
 import pt.portfolio.prr.parques.domain.Parque;
 import pt.portfolio.prr.parques.repo.ParqueRepository;
+import pt.portfolio.prr.parques.service.ParquesService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.http.HttpStatus;
+import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.util.List;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @RestController
 @RequestMapping("/api/parques")
 @Tag(name = "Parques", description = "CRUD de parques P+R")
 public class ParquesController {
     private final ParqueRepository repo;
+    private final ParquesService svc;
 
-    public ParquesController(ParqueRepository repo) {
+    public ParquesController(ParqueRepository repo, ParquesService svc) {
         this.repo = repo;
+        this.svc = svc;
     }
 
+    record OcupacaoDTO(Long parqueId, int ocupacaoAtual, int capacidadeTotal) {}
+    public static record EstadoDTO(String estado) {}
+
+        
     @GetMapping
-    @Operation(summary = "Lista todos os parques", description = "Opcional: ?cidade=Lisboa")
-    public List<Parque> list(@RequestParam(value = "cidade", required = false) String cidade) {
+    @Operation(summary = "Lista parques, opcionalmente filtrando por cidade")
+    public Page<Parque> list(
+            @RequestParam(name = "cidade", required = false) String cidade,
+            @PageableDefault(size = 20) Pageable pageable) {
         if (cidade != null && !cidade.isBlank()) {
-            return repo.findByCidadeIgnoreCase(cidade);
+            return repo.findByCidadeIgnoreCase(cidade.trim(), pageable);
+        } else {
+            return repo.findAll(pageable);
         }
-        return repo.findAll();
     }
 
     @GetMapping("/{id}")
@@ -38,36 +52,33 @@ public class ParquesController {
     }
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Cria um parque")
-    public Parque create(@RequestBody Parque p) {
+    public ResponseEntity<Parque> create(@Valid @RequestBody Parque p, UriComponentsBuilder uri) {
         p.setId(null);
         if (p.getOcupacaoAtual() == null) p.setOcupacaoAtual(0);
         if (p.getEstado() == null) p.setEstado(EstadoParque.ABERTO);
-        return repo.save(p);
+        Parque saved = repo.save(p);
+        return ResponseEntity
+            .created(uri.path("/api/parques/{id}").buildAndExpand(saved.getId()).toUri())
+            .body(saved);
     }
 
-    // --- PATCH via query param ---
-    @PatchMapping("/{id}/estado")
+    @PatchMapping(value = "/{id}/estado", params = "estado")
     @Operation(summary = "Atualiza estado (ABERTO/FECHADO/MANUTENCAO)")
     public Parque updateEstadoQuery(
             @PathVariable("id") Long id,
             @RequestParam(name = "estado") String estadoParam) {
         final EstadoParque novo;
-        try {
-            novo = EstadoParque.valueOf(estadoParam.trim().toUpperCase());
-        } catch (IllegalArgumentException ex) {
+        try { novo = EstadoParque.valueOf(estadoParam.trim().toUpperCase()); }
+        catch (IllegalArgumentException ex) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Estado inválido: " + estadoParam);
         }
-
-        Parque p = repo.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parque não encontrado"));
+        var p = repo.findById(id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parque não encontrado"));
         p.setEstado(novo);
         return repo.save(p);
     }
 
-    // --- PATCH via JSON ---
-    public static record EstadoDTO(String estado) {}
     @PatchMapping(path = "/{id}/estado", consumes = "application/json")
     @Operation(summary = "Atualiza estado via JSON")
     public Parque updateEstadoBody(
@@ -88,4 +99,27 @@ public class ParquesController {
         }
         repo.deleteById(id);
     }
+
+    @PostMapping("/{id}/checkin")
+    public OcupacaoDTO checkin(@PathVariable("id") Long id) {
+        var p = svc.checkin(id);
+        return new OcupacaoDTO(p.getId(), p.getOcupacaoAtual(), p.getCapacidadeTotal());
+    }
+
+    @PostMapping("/{id}/checkout")
+    public OcupacaoDTO checkout(@PathVariable("id") Long id) {
+        var p = svc.checkout(id);
+        return new OcupacaoDTO(p.getId(), p.getOcupacaoAtual(), p.getCapacidadeTotal());
+    }
+
+    @GetMapping("/{id}/livres")
+    public java.util.Map<String,Object> livres(@PathVariable("id") Long id){
+        var p = repo.findById(id).orElseThrow(() ->
+            new ResponseStatusException(HttpStatus.NOT_FOUND,"Parque não encontrado"));
+            int livres = p.getCapacidadeTotal() - p.getOcupacaoAtual();
+            return java.util.Map.of("parqueId", p.getId(), "livres", livres, "capacidadeTotal", p.getCapacidadeTotal());
+    }
+
 }
+
+

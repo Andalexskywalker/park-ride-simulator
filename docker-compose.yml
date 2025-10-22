@@ -4,8 +4,7 @@ services:
     build:
       context: .
       dockerfile: eureka-server/Dockerfile
-    ports:
-      - "8761:8761"
+    ports: ["8761:8761"]
     environment:
       - JAVA_TOOL_OPTIONS=-XX:+UseZGC -Xms128m -Xmx256m
 
@@ -13,10 +12,12 @@ services:
     build:
       context: .
       dockerfile: api-gateway/Dockerfile
-    ports:
-      - "8080:8080"
+    ports: ["8080:8080"]
     environment:
       - EUREKA_URI=http://eureka-server:8761/eureka/
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
+      - EUREKA_INSTANCE_HOSTNAME=api-gateway
       - JAVA_TOOL_OPTIONS=-XX:+UseZGC -Xms128m -Xmx256m
     depends_on:
       - eureka-server
@@ -25,8 +26,12 @@ services:
     build:
       context: .
       dockerfile: service-parques/Dockerfile
+    # opcional para debug: ports: ["8081:8081"]
     environment:
       - EUREKA_URI=http://eureka-server:8761/eureka/
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
+      - EUREKA_INSTANCE_HOSTNAME=service-parques
       - SERVER_PORT=8081
       - SERVICE_NAME=service-parques
       - CONTEXT_PATH=/parques
@@ -40,6 +45,9 @@ services:
       dockerfile: service-utilizadores/Dockerfile
     environment:
       - EUREKA_URI=http://eureka-server:8761/eureka/
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
+      - EUREKA_INSTANCE_HOSTNAME=service-utilizadores
       - SERVER_PORT=8082
       - SERVICE_NAME=service-utilizadores
       - CONTEXT_PATH=/utilizadores
@@ -51,8 +59,13 @@ services:
     build:
       context: .
       dockerfile: service-sessoes/Dockerfile
+    # opcional para debug: ports: ["8083:8083"]
     environment:
+      - PARQUES_BASE=http://service-parques:8081
       - EUREKA_URI=http://eureka-server:8761/eureka/
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
+      - EUREKA_INSTANCE_HOSTNAME=service-sessoes
       - SERVER_PORT=8083
       - SERVICE_NAME=service-sessoes
       - CONTEXT_PATH=/sessoes
@@ -66,6 +79,9 @@ services:
       dockerfile: service-tarifas-faturacao/Dockerfile
     environment:
       - EUREKA_URI=http://eureka-server:8761/eureka/
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
+      - EUREKA_INSTANCE_HOSTNAME=service-tarifas-faturacao
       - SERVER_PORT=8084
       - SERVICE_NAME=service-tarifas-faturacao
       - CONTEXT_PATH=/tarifas
@@ -79,6 +95,9 @@ services:
       dockerfile: service-reco-analytics/Dockerfile
     environment:
       - EUREKA_URI=http://eureka-server:8761/eureka/
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
+      - EUREKA_INSTANCE_HOSTNAME=service-reco-analytics
       - SERVER_PORT=8085
       - SERVICE_NAME=service-reco-analytics
       - CONTEXT_PATH=/reco
