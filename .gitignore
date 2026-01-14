@@ -7,3 +7,10 @@ target/
 **/*.iml
 *.log
 .DS_Store
+
+# Temporary logs and build artifacts
+build_*.txt
+logs_*.txt
+debug_output.txt
+logs.txt
+repro*

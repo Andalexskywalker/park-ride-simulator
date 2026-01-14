@@ -1,13 +1,23 @@
 server:
-  port: ${SERVER_PORT:8080}
+  port: ${SERVER_PORT:8084}
   servlet:
-    context-path: ${CONTEXT_PATH:}
+    context-path: ${CONTEXT_PATH:/tarifas}
 
 spring:
   application:
-    name: ${SERVICE_NAME:unknown}
-  main:
-    banner-mode: "off"
+    name: service-tarifas-faturacao
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/prr_db}
+    username: ${DB_USER:user}
+    password: ${DB_PASS:pass}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
 
 management:
   endpoints:
@@ -21,10 +31,10 @@ management:
 
 eureka:
   instance:
-    lease-renewal-interval-in-seconds: 10     # heartbeat a cada 10s
-    lease-expiration-duration-in-seconds: 30  # expira em 30s sem heartbeats
+    lease-renewal-interval-in-seconds: 10 # heartbeat a cada 10s
+    lease-expiration-duration-in-seconds: 30 # expira em 30s sem heartbeats
     prefer-ip-address: true
   client:
     healthcheck:
-      enabled: true                           # usa Actuator/health para o status
-    registry-fetch-interval-seconds: 5        # refetch rápido (opcional)
+      enabled: true # usa Actuator/health para o status
+    registry-fetch-interval-seconds: 5 # refetch rápido (opcional)

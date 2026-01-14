@@ -8,49 +8,78 @@ spring:
   cloud:
     loadbalancer:
       cache:
-        enabled: true  # se tiveres Caffeine na classpath, usa-a
+        enabled: true
     gateway:
       httpclient:
         connect-timeout: 3000
-        response-timeout: 10s
+        timeout: 10s
       globalcors:
         corsConfigurations:
-          '[/**]':
+          "[/**]":
             allowedOrigins: "*"
             allowedMethods: [GET, POST, PATCH, PUT, DELETE, OPTIONS]
             allowedHeaders: "*"
             allowCredentials: false
-      server:
-        webflux:
-          routes:
-            - id: parques
-              uri: lb://service-parques
-              predicates:
-                - Path=/parques/**
-            - id: sessoes
-              uri: lb://service-sessoes
-              predicates:
-                - Path=/sessoes/**
-            - id: utilizadores
-              uri: lb://service-utilizadores
-              predicates:
-                - Path=/utilizadores/**
-            - id: tarifas
-              uri: lb://service-tarifas-faturacao
-              predicates:
-                - Path=/tarifas/**
-            - id: reco
-              uri: lb://service-reco-analytics
-              predicates:
-                - Path=/reco/**
+      routes:
+        - id: parques
+          uri: lb://service-parques
+          predicates:
+            - Path=/parques/**
+          filters:
+            - AuthenticationFilter
 
-      # (Opcional) Retry automático em 5xx/timeout
+        - id: sessoes
+          uri: lb://service-sessoes
+          predicates:
+            - Path=/sessoes/**
+          filters:
+            - AuthenticationFilter
+
+        - id: auth
+          uri: lb://service-utilizadores
+          predicates:
+            - Path=/utilizadores/api/auth/**
+          filters:
+
+        - id: register
+          uri: lb://service-utilizadores
+          predicates:
+            - Path=/utilizadores/api/utilizadores
+            - Method=POST
+
+        - id: utilizadores
+          uri: lb://service-utilizadores
+          predicates:
+            - Path=/utilizadores/**
+          filters:
+            - AuthenticationFilter
+
+        - id: tarifas
+          uri: lb://service-tarifas-faturacao
+          predicates:
+            - Path=/tarifas/**
+          filters:
+            - AuthenticationFilter
+
+        - id: reco
+          uri: lb://service-reco-analytics
+          predicates:
+            - Path=/reco/**
+          filters:
+            - AuthenticationFilter
+
       default-filters:
         - name: Retry
           args:
             retries: 2
             methods: [GET]
-            statuses: [INTERNAL_SERVER_ERROR, BAD_GATEWAY, SERVICE_UNAVAILABLE, GATEWAY_TIMEOUT]
+            statuses:
+              [
+                INTERNAL_SERVER_ERROR,
+                BAD_GATEWAY,
+                SERVICE_UNAVAILABLE,
+                GATEWAY_TIMEOUT,
+              ]
 
 eureka:
   client:
@@ -58,12 +87,8 @@ eureka:
       defaultZone: ${EUREKA_URI:http://eureka-server:8761/eureka/}
     healthcheck:
       enabled: true
-    fetch-registry: true
-    register-with-eureka: true
   instance:
     prefer-ip-address: true
-    lease-renewal-interval-in-seconds: 10
-    lease-expiration-duration-in-seconds: 30
 
 management:
   endpoints:
@@ -73,4 +98,3 @@ management:
   endpoint:
     gateway:
       enabled: true
-

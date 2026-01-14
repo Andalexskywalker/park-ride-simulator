@@ -9,6 +9,22 @@ spring:
   main:
     banner-mode: "off"
 
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/prr_db}
+    username: ${DB_USER:user}
+    password: ${DB_PASS:pass}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        enable_lazy_load_no_trans: true
+    show-sql: true
+
 management:
   endpoints:
     web:
@@ -31,5 +47,6 @@ eureka:
   instance:
     lease-renewal-interval-in-seconds: 10
     lease-expiration-duration-in-seconds: 30
-    prefer-ip-address: true
+    prefer-ip-address:
+      true
       # refetch rápido (opcional)

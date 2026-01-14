@@ -1,5 +1,20 @@
 version: "3.9"
 services:
+  postgres-db:
+    image: postgres:16-alpine
+    container_name: postgres-db
+    environment:
+      - POSTGRES_DB=prr_db
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=pass
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d prr_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   eureka-server:
     build:
       context: .
@@ -26,7 +41,6 @@ services:
     build:
       context: .
       dockerfile: service-parques/Dockerfile
-    # opcional para debug: ports: ["8081:8081"]
     environment:
       - EUREKA_URI=http://eureka-server:8761/eureka/
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
@@ -35,9 +49,15 @@ services:
       - SERVER_PORT=8081
       - SERVICE_NAME=service-parques
       - CONTEXT_PATH=/parques
+      - DB_URL=jdbc:postgresql://postgres-db:5432/prr_db
+      - DB_USER=user
+      - DB_PASS=pass
       - JAVA_TOOL_OPTIONS=-XX:+UseZGC -Xms96m -Xmx192m
     depends_on:
-      - eureka-server
+      eureka-server:
+        condition: service_started
+      postgres-db:
+        condition: service_healthy
 
   service-utilizadores:
     build:
@@ -51,15 +71,20 @@ services:
       - SERVER_PORT=8082
       - SERVICE_NAME=service-utilizadores
       - CONTEXT_PATH=/utilizadores
+      - DB_URL=jdbc:postgresql://postgres-db:5432/prr_db
+      - DB_USER=user
+      - DB_PASS=pass
       - JAVA_TOOL_OPTIONS=-XX:+UseZGC -Xms96m -Xmx192m
     depends_on:
-      - eureka-server
+      eureka-server:
+        condition: service_started
+      postgres-db:
+        condition: service_healthy
 
   service-sessoes:
     build:
       context: .
       dockerfile: service-sessoes/Dockerfile
-    # opcional para debug: ports: ["8083:8083"]
     environment:
       - PARQUES_BASE=http://service-parques:8081
       - EUREKA_URI=http://eureka-server:8761/eureka/
@@ -69,9 +94,15 @@ services:
       - SERVER_PORT=8083
       - SERVICE_NAME=service-sessoes
       - CONTEXT_PATH=/sessoes
+      - DB_URL=jdbc:postgresql://postgres-db:5432/prr_db
+      - DB_USER=user
+      - DB_PASS=pass
       - JAVA_TOOL_OPTIONS=-XX:+UseZGC -Xms96m -Xmx192m
     depends_on:
-      - eureka-server
+      eureka-server:
+        condition: service_started
+      postgres-db:
+        condition: service_healthy
 
   service-tarifas-faturacao:
     build:
@@ -85,9 +116,15 @@ services:
       - SERVER_PORT=8084
       - SERVICE_NAME=service-tarifas-faturacao
       - CONTEXT_PATH=/tarifas
+      - DB_URL=jdbc:postgresql://postgres-db:5432/prr_db
+      - DB_USER=user
+      - DB_PASS=pass
       - JAVA_TOOL_OPTIONS=-XX:+UseZGC -Xms96m -Xmx192m
     depends_on:
-      - eureka-server
+      eureka-server:
+        condition: service_started
+      postgres-db:
+        condition: service_healthy
 
   service-reco-analytics:
     build:
@@ -101,6 +138,22 @@ services:
       - SERVER_PORT=8085
       - SERVICE_NAME=service-reco-analytics
       - CONTEXT_PATH=/reco
+      - DB_URL=jdbc:postgresql://postgres-db:5432/prr_db
+      - DB_USER=user
+      - DB_PASS=pass
       - JAVA_TOOL_OPTIONS=-XX:+UseZGC -Xms96m -Xmx192m
     depends_on:
-      - eureka-server
+      eureka-server:
+        condition: service_started
+      postgres-db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "3001:80"
+    environment:
+      - VITE_API_URL=http://localhost:8080
+    depends_on:
+      - api-gateway
