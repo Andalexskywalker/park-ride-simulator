@@ -14,3 +14,8 @@ logs_*.txt
 debug_output.txt
 logs.txt
 repro*
+
+# Secrets
+.env
+.env.*
+!.env.example
