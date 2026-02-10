@@ -9,4 +9,6 @@ public interface SessaoRepository extends JpaRepository<Sessao, Long> {
     Optional<Sessao> findFirstByMatriculaAndEstado(String matricula, Sessao.Estado estado);
 
     java.util.List<Sessao> findByParqueIdAndEstado(Long parqueId, Sessao.Estado estado);
+
+    long countByEstado(Sessao.Estado estado);
 }

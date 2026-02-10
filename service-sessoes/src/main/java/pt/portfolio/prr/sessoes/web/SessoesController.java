@@ -149,7 +149,7 @@ public class SessoesController {
   @GetMapping("/analytics")
   public Map<String, Object> getAnalytics() {
     long totalSessoes = repo.count();
-    long ativas = repo.findAll().stream().filter(s -> s.getEstado() == Sessao.Estado.ATIVA).count();
+    long ativas = repo.countByEstado(Sessao.Estado.ATIVA);
 
     // Receita total (simplificado, somando minutos * preço médio ou apenas sessões
     // fechadas?)
