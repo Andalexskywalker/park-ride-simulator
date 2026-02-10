@@ -1,0 +1,15 @@
+$TTL    604800
+@       IN      SOA     ns1.parkride.local. admin.parkride.local. (
+                              3         ; Serial
+                         604800         ; Refresh
+                          86400         ; Retry
+                        2419200         ; Expire
+                         604800 )       ; Negative Cache TTL
+;
+@       IN      NS      ns1.parkride.local.
+@       IN      A       192.168.1.216
+ns1     IN      A       192.168.1.216
+npm     IN      A       192.168.1.216
+app     IN      A       192.168.1.216
+api     IN      A       192.168.1.216
+*       IN      A       192.168.1.216
