@@ -180,3 +180,17 @@ services:
       - VITE_API_URL=http://localhost:8080
     depends_on:
       - api-gateway
+
+  nginx-proxy-manager:
+    image: 'jc21/nginx-proxy-manager:latest'
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '81:81'
+      - '443:443'
+    volumes:
+      - ./npm-data:/data
+      - ./npm-letsencrypt:/etc/letsencrypt
+    depends_on:
+      - frontend
+      - api-gateway
