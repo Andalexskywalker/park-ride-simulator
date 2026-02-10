@@ -47,6 +47,10 @@ eureka:
   instance:
     lease-renewal-interval-in-seconds: 10
     lease-expiration-duration-in-seconds: 30
-    prefer-ip-address:
-      true
-      # refetch rápido (opcional)
+    prefer-ip-address: true
+
+# Configurações de Segurança JWT
+jwt:
+  # Usa a variável de ambiente JWT_SECRET. Se não existir, usa este valor por defeito (SÓ PARA DEV LOCAL)
+  secret: ${JWT_SECRET:SecretKeyPadraoParaLocalDevelopmentApenas_NaoUsarEmProd_123456}
+  expiration: 86400000 # 24 horas

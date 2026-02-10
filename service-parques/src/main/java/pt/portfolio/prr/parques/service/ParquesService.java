@@ -17,10 +17,12 @@ public class ParquesService {
     }
 
     @Transactional
+    @SuppressWarnings("null")
     public Parque checkin(Long id) {
         Parque p = repo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parque não encontrado"));
-        if (p.getOcupacaoAtual() == null) p.setOcupacaoAtual(0);
+        if (p.getOcupacaoAtual() == null)
+            p.setOcupacaoAtual(0);
         if (p.getOcupacaoAtual() >= p.getCapacidadeTotal()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Parque cheio");
         }
@@ -29,10 +31,12 @@ public class ParquesService {
     }
 
     @Transactional
+    @SuppressWarnings("null")
     public Parque checkout(Long id) {
         Parque p = repo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parque não encontrado"));
-        if (p.getOcupacaoAtual() == null) p.setOcupacaoAtual(0);
+        if (p.getOcupacaoAtual() == null)
+            p.setOcupacaoAtual(0);
         if (p.getOcupacaoAtual() <= 0) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Parque vazio");
         }

@@ -11,6 +11,7 @@ import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 
 import java.util.Map;
+import org.springframework.lang.NonNull;
 
 @Component
 public class AuthenticationFilter extends AbstractGatewayFilterFactory<AuthenticationFilter.Config> {
@@ -26,6 +27,8 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
     }
 
     @Override
+    @NonNull
+    @SuppressWarnings("null")
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {
             ServerHttpRequest request = exchange.getRequest();
@@ -46,10 +49,11 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
             String token = authHeader.substring(7);
 
             System.out.println("GATEWAY: Intercepting " + exchange.getRequest().getPath());
+            Map<String, String> body = Map.of("token", token);
             return webClientBuilder.build()
                     .post()
                     .uri("http://service-utilizadores:8082/utilizadores/api/auth/validate")
-                    .bodyValue(Map.of("token", token))
+                    .bodyValue(body)
                     .retrieve()
                     .bodyToMono(Boolean.class)
                     .onErrorResume(e -> {

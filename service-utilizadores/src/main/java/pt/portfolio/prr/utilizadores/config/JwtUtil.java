@@ -12,11 +12,14 @@ import java.util.Map;
 @Component
 public class JwtUtil {
 
-    private final String SECRET = "EstaChaveTemDeTerPeloMenos32CaracteresParaHS256!!!";
-    private final javax.crypto.SecretKey key = io.jsonwebtoken.security.Keys.hmacShaKeyFor(SECRET.getBytes());
+    private final SecretKey key;
 
     @Value("${jwt.expiration:86400000}")
     private long expiration;
+
+    public JwtUtil(@Value("${jwt.secret}") String secret) {
+        this.key = io.jsonwebtoken.security.Keys.hmacShaKeyFor(secret.getBytes());
+    }
 
     public String generateToken(String email, String role, String sessionId) {
         Map<String, Object> claims = new HashMap<>();

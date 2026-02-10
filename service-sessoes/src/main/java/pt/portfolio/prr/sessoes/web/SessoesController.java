@@ -10,7 +10,6 @@ import org.springframework.web.server.ResponseStatusException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
@@ -90,6 +89,7 @@ public class SessoesController {
   }
 
   @PostMapping("/{id}/stop")
+  @SuppressWarnings("null")
   public Map<String, Object> stop(@PathVariable("id") Long id) {
     var s = repo.findById(id)
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Sessão não encontrada"));

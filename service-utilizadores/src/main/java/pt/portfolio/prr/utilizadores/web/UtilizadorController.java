@@ -55,12 +55,14 @@ public class UtilizadorController {
     }
 
     @GetMapping("/{id}")
+    @SuppressWarnings("null")
     public Utilizador obter(@PathVariable("id") Long id) {
         return utilizadorRepo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilizador não encontrado"));
     }
 
     @PostMapping("/{id}/viaturas")
+    @SuppressWarnings("null")
     @ResponseStatus(HttpStatus.CREATED)
     public Viatura adicionarViatura(@PathVariable("id") Long id, @Valid @RequestBody Viatura viatura) {
         Utilizador user = utilizadorRepo.findById(id)
