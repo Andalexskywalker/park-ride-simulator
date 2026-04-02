@@ -2,7 +2,7 @@
 FROM maven:3.9-eclipse-temurin-21 AS build
 WORKDIR /app
 COPY . .
-RUN mvn -q -DskipTests -pl service-parques -am clean package
+RUN --mount=type=cache,target=/root/.m2 mvn -q -DskipTests -pl service-parques -am clean package
 
 # Runtime stage
 FROM eclipse-temurin:21-jre-alpine

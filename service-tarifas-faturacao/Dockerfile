@@ -2,7 +2,7 @@
 FROM maven:3.9-eclipse-temurin-21 AS build
 WORKDIR /app
 COPY . /app
-RUN mvn -q -DskipTests -pl service-tarifas-faturacao -am clean package spring-boot:repackage
+RUN --mount=type=cache,target=/root/.m2 mvn -q -DskipTests -pl service-tarifas-faturacao -am clean package spring-boot:repackage
 
 # Runtime stage
 FROM eclipse-temurin:21-jre-alpine
