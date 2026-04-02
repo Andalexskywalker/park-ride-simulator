@@ -1,15 +1,15 @@
 version: "3.9"
 services:
   postgres-db:
-    image: postgres:16-alpine
+    build:
+      context: ./postgres-init
+      dockerfile: Dockerfile
     container_name: postgres-db
     environment:
       - POSTGRES_DB=prr_db
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_MULTIPLE_DATABASES=prr_parques_db,prr_utilizadores_db,prr_sessoes_db,prr_tarifas_db,prr_reco_db
-    volumes:
-      - ./postgres-init:/docker-entrypoint-initdb.d
     # ports:
     #   - "5432:5432"
     healthcheck:
@@ -192,17 +192,21 @@ services:
       - '81:81'
       - '443:443'
     volumes:
-      - ./npm-data:/data
-      - ./npm-letsencrypt:/etc/letsencrypt
+      - npm-data:/data
+      - npm-letsencrypt:/etc/letsencrypt
+      
   bind9:
-    image: ubuntu/bind9:latest
+    build:
+      context: ./bind
+      dockerfile: Dockerfile
     container_name: bind9
     ports:
       - "53:53/tcp"
       - "53:53/udp"
-    volumes:
-      - ./bind/named.conf:/etc/bind/named.conf
-      - ./bind/parkride.local.zone:/etc/bind/parkride.local.zone
     environment:
       - BIND9_USER=root
     restart: unless-stopped
+
+volumes:
+  npm-data:
+  npm-letsencrypt:
